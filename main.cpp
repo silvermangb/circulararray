@@ -19,6 +19,9 @@ private:
 	int readPos;
 	int entries;
 public:
+	~CircularArray() {
+		delete [] data;
+	}
 	CircularArray(int p_size) {
 		size = p_size;
 		data = new int[size];
