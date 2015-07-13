@@ -102,10 +102,10 @@ void
 test1
   ()
 {
-	CircularArray ca(16);
+	CircularArray ca(4);
 	bool putRc;
 	pair<int,bool> getRc;
-	for(int i=0;i<ca.capacity();++i) {
+	for(int i=0;i<2*ca.capacity();++i) {
 		putRc = ca.put(i);
 		if(!putRc) {
 			throw "error";
