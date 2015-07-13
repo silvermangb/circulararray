@@ -12,6 +12,8 @@ using namespace std;
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <stdexcept>
+#include <sstream>
 
 class CircularArray {
 private:
@@ -32,7 +34,7 @@ public:
 	}
 	bool put(int p_value) {
 		if (_entries < _size) {
-			_data[_entries % _size] = p_value;
+			_data[(_readPos+_entries) % _size] = p_value;
 			++_entries;
 			return true;
 		} else {
@@ -117,10 +119,44 @@ test1
 		}
 	}
 }
+
+void
+test2
+  ()
+{
+	CircularArray ca(8);
+	pair<int,bool> getRc;
+	for(int i=0;i<8;++i) {
+		ca.put(i);
+	}
+	int getValue = -1;
+	for(int i=0;i<4;++i) {
+		getRc = ca.get();
+		if((getValue+1)!=getRc.first) {
+			ostringstream oss;
+			oss << __LINE__ << " " << (getValue+1) << "!=" << getRc.first << endl;
+			throw runtime_error(oss.str());
+		}
+		getValue = getRc.first;
+	}
+	for(int i=8;i<(8+4);++i) {
+		ca.put(i);
+	}
+	for(int i=0;i<ca.size();++i) {
+		getRc = ca.get();
+		if((getValue+1)!=getRc.first) {
+			ostringstream oss;
+			oss << __LINE__ << " " << (getValue+1) << "!=" << getRc.first << endl;
+			throw runtime_error(oss.str());
+		}
+		getValue = getRc.first;
+	}
+}
 int main() {
 	cout << boolalpha;
 	tests.push_back(test0);
 	tests.push_back(test1);
+	tests.push_back(test2);
 	int successes = 0;
 	int failures = 0;
 	for(size_t i=0;i<tests.size();++i) {
