@@ -11,51 +11,128 @@ using namespace std;
 
 #include <iostream>
 #include <utility>
+#include <vector>
 
 class CircularArray {
 private:
-	int *data;
-	int size;
-	int readPos;
-	int entries;
+	int *_data;
+	int _size;
+	int _readPos;
+	int _entries;
 public:
 	~CircularArray() {
-		delete [] data;
+		delete [] _data;
 	}
 	CircularArray(int p_size) {
-		size = p_size;
-		data = new int[size];
-		readPos = 0;
-		entries = 0;
+		_size = p_size;
+		_data = new int[_size];
+		_readPos = 0;
+		_entries = 0;
 
 	}
 	bool put(int p_value) {
-		if (entries < size) {
-			++entries;
-			data[entries % size] = p_value;
+		if (_entries < _size) {
+			_data[_entries % _size] = p_value;
+			++_entries;
 			return true;
 		} else {
 			return false;
 		}
 	}
 	pair<int, bool> get() {
-		if (entries == 0) {
+		if (_entries == 0) {
 			return pair<int, bool>(0, false);
 		} else {
-			pair<int, bool> rc(data[readPos++], true);
-			readPos = (readPos + 1) % size;
-			--entries;
+			pair<int, bool> rc(_data[_readPos++], true);
+			_readPos %= _size;
+			--_entries;
 			return rc;
 		}
 	}
+	int capacity() {
+		return this->_size;
+	}
+	int size() {
+		return this->_entries;
+	}
 };
 
+using TestSignature = void (*)();
+
+vector<TestSignature> tests;
+
+void
+test0
+  ()
+{
+	CircularArray ca(16);
+	int falseCount = 0;
+	int trueCount = 0;
+	for(int i=0;i<2*ca.capacity();++i) {
+		if(ca.put(i)) {
+			++trueCount;
+		} else {
+			++falseCount;
+		}
+	}
+	if(falseCount!=trueCount) {
+		throw "error";
+	}
+	falseCount = 0;
+	trueCount  = 0;
+	for(int i=0;i<2*ca.capacity();++i) {
+		pair<int,bool> rc = ca.get();
+		if(rc.second) {
+			++trueCount;
+			if(rc.first!=i) {
+				throw "error";
+			}
+		} else {
+			++falseCount;
+		}
+	}
+	if(trueCount!=falseCount) {
+		throw "error";
+	}
+}
+
+void
+test1
+  ()
+{
+	CircularArray ca(16);
+	bool putRc;
+	pair<int,bool> getRc;
+	for(int i=0;i<ca.capacity();++i) {
+		putRc = ca.put(i);
+		if(!putRc) {
+			throw "error";
+		}
+		getRc = ca.get();
+		if(!getRc.second) {
+			throw "error";
+		}
+		if(getRc.first!=i) {
+			throw "error";
+		}
+	}
+}
 int main() {
 	cout << boolalpha;
-	CircularArray ca(1);
-	cout << ca.put(1) << endl;
-	cout << ca.put(2) << endl;
-	cout << ca.get().first << "," << ca.get().second << endl;
-	cout << ca.get().first << "," << ca.get().second << endl;
+	tests.push_back(test0);
+	tests.push_back(test1);
+	int successes = 0;
+	int failures = 0;
+	for(size_t i=0;i<tests.size();++i) {
+		try
+		{
+			tests[i]();
+			++successes;
+		} catch(...) {
+			cout << i << " failed" << endl;
+			++failures;
+		}
+	}
+	cout << successes << " successes " << "," << failures << " failures"<<endl;
 	return 0;
 }
